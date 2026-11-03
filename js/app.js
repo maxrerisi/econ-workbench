@@ -132,12 +132,12 @@
     if (!names.length) list.append(el('li', { class: 'ws-empty' }, 'Nothing saved yet. Press ', el('b', {}, 'Save'), ' in the data editor, or type ', el('code', {}, 'x = [1 2 3]'), ' below.'));
     for (const name of names) {
       const v = ws[name];
-      const nameBtn = el('button', { type: 'button', class: 'ws-name', title: 'Insert into the command line', onclick: () => insertCmd(name) }, name, el('span', { class: 'ws-dims' }, badgeOf(v)));
+      const nameBtn = el('button', { type: 'button', class: 'ws-name', 'data-tip': 'Click to use this name in the command box', onclick: () => insertCmd(name) }, name, el('span', { class: 'ws-dims' }, badgeOf(v)));
       const actions = el('div', { class: 'ws-actions' });
-      if (v instanceof Data) actions.append(el('button', { type: 'button', title: 'Edit in the data editor', 'aria-label': `Edit ${name}`, onclick: () => editInGrid(name, v) }, '✎'));
-      actions.append(el('button', { type: 'button', title: 'Copy', 'aria-label': `Copy ${name}`, onclick: () => copy(valueText(v)) }, '⧉'));
-      actions.append(el('button', { type: 'button', title: 'Delete', 'aria-label': `Delete ${name}`, onclick: () => { delete ws[name]; saveWs(); renderWs(); toast(`Deleted ${name}`); } }, '✕'));
-      const prev = el('div', { class: 'ws-preview mono', title: 'Insert into the command line', onclick: () => insertCmd(name) }, valueText(v).slice(0, 90) + (valueText(v).length > 90 ? '…' : ''));
+      if (v instanceof Data) actions.append(el('button', { type: 'button', 'data-tip': 'Edit in the Data editor', 'aria-label': `Edit ${name}`, onclick: () => editInGrid(name, v) }, '✎'));
+      actions.append(el('button', { type: 'button', 'data-tip': 'Copy as text', 'aria-label': `Copy ${name}`, onclick: () => copy(valueText(v)) }, '⧉'));
+      actions.append(el('button', { type: 'button', 'data-tip': 'Delete', 'aria-label': `Delete ${name}`, onclick: () => { delete ws[name]; saveWs(); renderWs(); toast(`Deleted ${name}`); } }, '✕'));
+      const prev = el('div', { class: 'ws-preview mono', onclick: () => insertCmd(name) }, valueText(v).slice(0, 90) + (valueText(v).length > 90 ? '…' : ''));
       list.append(el('li', { class: 'ws-item' }, nameBtn, actions, prev));
     }
   }
@@ -164,6 +164,29 @@
     ['MLE…', 'mle({x}, |)'], ['MoM…', 'mom({x}, |)'],
   ];
   const BINARY = [['OLS {y} ~ {x}', 'ols({y}, {x})'], ['cor', 'cor({x}, {y})'], ['cov', 'cov({x}, {y})'], ['CI for μ₁ − μ₂', 'ci2({x}, {y})'], ['two-sample test', 'ttest2({x}, {y})']];
+  // Plain-English tooltips for the quick-op buttons (keyed by the command's function name)
+  const QO_TIPS = {
+    summary: 'A quick overview: how many values, the average, the spread, the smallest and largest.',
+    mean: 'The average: add up the values and divide by how many there are.',
+    var: 'Sample variance s²: how spread out the values are (divides by n − 1).',
+    varp: 'Plug-in variance σ̂²: the same idea but divides by n. Used in maximum likelihood.',
+    sd: 'Standard deviation: how far a typical value is from the average (√s²).',
+    se: 'Standard error: how much the average would change from sample to sample (s/√n).',
+    median: 'The middle value once the data are sorted.',
+    skew: 'Skewness: is the data lopsided? Positive means a long tail to the right.',
+    ci: 'Confidence interval: a range of believable values for the true average.',
+    tci: 'Confidence interval using the t distribution, which is safer for small samples.',
+    ttest: 'Test whether the true average equals a number. You type the number next.',
+    hist: 'A bar chart of how the values are spread out.',
+    mle: 'Estimate a model\'s parameter by maximum likelihood. You choose the model next (e.g. poisson).',
+    mom: 'Estimate a model\'s parameter by matching averages (method of moments). You choose the model next.',
+    ols: 'Fit the best straight line predicting one column from the other.',
+    cor: 'Correlation, from −1 to 1: how closely the two columns follow a straight line.',
+    cov: 'Covariance: do the two columns tend to rise and fall together?',
+    ci2: 'Confidence interval for the difference between the two averages.',
+    ttest2: 'Test whether the two columns have the same true average.',
+  };
+  const qoTip = (src) => `${QO_TIPS[src.slice(0, src.indexOf('('))] || ''}\nRuns: ${src.replace('|', '…')}`.trim();
   let qoX = null, qoY = null;
   function renderQuickOps() {
     const names = editor.names();
@@ -175,7 +198,7 @@
     selX.value = qoX;
     u.append(el('span', { class: 'qo-label' }, 'On'), selX);
     const sub = (s) => s.replace(/\{x\}/g, qoX).replace(/\{y\}/g, qoY);
-    for (const [l, tpl] of UNARY) u.append(el('button', { type: 'button', class: 'qo', title: sub(tpl).replace('|', '…'), onclick: () => quickOp(sub(tpl)) }, l));
+    for (const [l, tpl] of UNARY) u.append(el('button', { type: 'button', class: 'qo', 'data-tip': qoTip(sub(tpl)), onclick: () => quickOp(sub(tpl)) }, l));
     const bn = $('binaryOps');
     bn.hidden = !qoY;
     bn.innerHTML = '';
@@ -183,7 +206,7 @@
       const selY = el('select', { class: 'mini-select', 'aria-label': 'Second column', onchange: (e) => { qoY = e.target.value; renderQuickOps(); } }, ...names.filter((n) => n !== qoX).map((n) => el('option', { value: n }, n)));
       selY.value = qoY;
       bn.append(el('span', { class: 'qo-label' }, `${qoX} &`), selY);
-      for (const [l, tpl] of BINARY) bn.append(el('button', { type: 'button', class: 'qo', title: sub(tpl), onclick: () => quickOp(sub(tpl)) }, sub(l)));
+      for (const [l, tpl] of BINARY) bn.append(el('button', { type: 'button', class: 'qo', 'data-tip': qoTip(sub(tpl)), onclick: () => quickOp(sub(tpl)) }, sub(l)));
     }
   }
   function quickOp(src) {
@@ -234,9 +257,19 @@
     ['Normal', 'Normal(|, )'], ['Binom', 'Binom(|, )'], ['Pois', 'Pois(|)'], ['Unif', 'Unif(|, )'], ['Exp', 'Exp(|)'], ['pnorm', 'pnorm(|)'], ['qnorm', 'qnorm(|)'],
     ['clt', 'clt(|, , , , )'], ['bayes', 'bayes(|, , )'], ['choose', 'choose(|, )'], ['mle', 'mle(|, )'], ['mom', 'mom(|, )'], ['skew', 'skew(|)'], ['mse', 'mse(|, )'], ['ols', 'ols(|, )'], ['predict', 'predict(|, )'], ['sample', 'sample(|, )'],
   ];
-  for (const [label, tpl] of CHIPS) $('chips').append(el('button', { type: 'button', class: 'chip', onclick: () => insertTemplate(tpl) }, label));
-  const EXAMPLES = ['ci(accts)', 'x = [2.1 3.4 1.9 5.2 4.4 3.0]', 'ttest(x, 3)', 'X = Binom(10, 0.3)', 'P(X, <=, 2)', 'pnorm(1.96)', 'bayes(0.01, 0.9, 0.05)', 'clt(50, 10, 36, 52, Inf)', 'mle(accts, poisson)', 'skew(accts)', 'dist([0 1 2], [1/4 1/2 1/4])'];
-  for (const ex of EXAMPLES) $('examples').append(el('button', { type: 'button', class: 'chip', onclick: () => { cmd.value = ex; run(); } }, ex));
+  for (const [label, tpl] of CHIPS) {
+    const fn = E.FUNCS[label];
+    $('chips').append(el('button', { type: 'button', class: 'chip', 'data-tip': fn ? `${fn.doc}\n${fn.sig}` : label, onclick: () => insertTemplate(tpl) }, label));
+  }
+  const EXAMPLES = [
+    ['ci(accts)', '95% confidence interval for the example data in the editor'], ['x = [2.1 3.4 1.9 5.2 4.4 3.0]', 'Save a list of numbers as x'],
+    ['ttest(x, 3)', 'Test whether the true mean of x is 3 (save x first)'], ['X = Binom(10, 0.3)', 'Save a binomial: 10 tries, 30% success each'],
+    ['P(X, <=, 2)', 'Chance of 2 or fewer successes (save X first)'], ['pnorm(1.96)', 'Area under the standard normal curve to the left of 1.96'],
+    ['bayes(0.01, 0.9, 0.05)', 'Bayes\' rule: chance of being sick given a positive test'], ['clt(50, 10, 36, 52, Inf)', 'Central limit theorem: chance a sample mean exceeds 52'],
+    ['mle(accts, poisson)', 'Maximum likelihood estimate for a Poisson model'], ['skew(accts)', 'How lopsided the example data are'],
+    ['dist([0 1 2], [1/4 1/2 1/4])', 'A random variable from a list of values and probabilities'],
+  ];
+  for (const [ex, what] of EXAMPLES) $('examples').append(el('button', { type: 'button', class: 'chip', 'data-tip': what, onclick: () => { cmd.value = ex; run(); } }, ex));
 
   function envWithEditor() {
     let ov = {};
@@ -335,7 +368,7 @@
   function renderSteps(c, steps, rec) {
     if (!steps || !steps.some((g) => g.items.length)) return;
     const total = steps.reduce((s, g) => s + g.items.length, 0);
-    const det = el('details', { class: 'steps' }, el('summary', {}, `Show the working (${total} step${total === 1 ? '' : 's'})`));
+    const det = el('details', { class: 'steps' }, el('summary', { 'data-tip': 'Every step from formula to answer, like a worked solution' }, `Show the working (${total} step${total === 1 ? '' : 's'})`));
     if (rec.stepsOpen) det.open = true;
     det.addEventListener('toggle', () => { rec.stepsOpen = det.open; });
     let num = 0;
@@ -354,14 +387,16 @@
     const c = rec.el;
     c.innerHTML = '';
     const head = el('div', { class: 'card-head' });
-    head.append(el('span', { class: 'card-input', title: 'Click to edit & re-run', onclick: () => { cmd.value = rec.input; showTab('calc'); cmd.focus(); updatePreview(); } }, rec.input));
+    head.append(el('span', { class: 'card-input', 'data-tip': 'Click to edit and run again', onclick: () => { cmd.value = rec.input; showTab('calc'); cmd.focus(); updatePreview(); } }, rec.input));
     const actions = el('div', { class: 'card-actions' });
     const body = el('div', { class: 'card-body' });
     c.append(head, body);
     if (rec.error) {
       body.append(el('div', {}, rec.error));
       if (rec.pos != null) body.append(el('pre', { class: 'mono small', style: 'margin:6px 0 0;color:var(--muted)' }, rec.input + '\n' + ' '.repeat(rec.pos) + '^'));
-      actions.append(el('button', { type: 'button', title: 'Remove', onclick: () => removeCard(rec) }, '✕'));
+      body.append(el('p', { class: 'small muted', style: 'margin:8px 0 0' }, 'Common fixes: put commas between inputs, put lists in square brackets [ ], and save a name before using it. ',
+        el('button', { type: 'button', class: 'link-btn', onclick: () => EW.guide.open('commands') }, 'Help with commands')));
+      actions.append(el('button', { type: 'button', 'data-tip': 'Remove this card', 'aria-label': 'Remove', onclick: () => removeCard(rec) }, '✕'));
       head.append(actions);
       return;
     }
@@ -371,8 +406,10 @@
     const b = badgeOf(inner);
     if (b) head.append(el('span', { class: 'badge' }, b));
     if (res.assign) head.append(el('span', { class: 'badge saved' }, `saved as ${res.assign}`));
+    const term = EW.guide.termFor(rec.input);
     if (v instanceof Info) {
       body.append(el('div', { class: 'info-title' }, v.title));
+      if (term) body.append(aboutBtn(term));
       renderBlocks(body, v.blocks);
       const extras = el('div', { class: 'parts' });
       if (v.parts) for (const [pn, pv] of Object.entries(v.parts)) extras.append(saveButton(pv, `Save ${pn}`, pn));
@@ -381,14 +418,19 @@
       if (inner != null && !res.assign) actions.append(saveButton(inner, 'Save as…'));
     } else {
       body.append(renderValue(v));
+      if (term) body.append(aboutBtn(term));
       if (!res.assign) actions.append(saveButton(v, 'Save as…'));
-      if (v instanceof Data) actions.append(el('button', { type: 'button', title: 'Load into the data editor', onclick: () => editInGrid(res.assign || suggestName(v), v) }, 'Edit'));
+      if (v instanceof Data) actions.append(el('button', { type: 'button', 'data-tip': 'Open in the Data editor to change the numbers', onclick: () => editInGrid(res.assign || suggestName(v), v) }, 'Edit'));
     }
-    if (inner != null) actions.append(el('button', { type: 'button', title: 'Copy the value', onclick: () => copy(valueText(inner)) }, 'Copy'));
-    actions.append(el('button', { type: 'button', title: 'Remove', 'aria-label': 'Remove result', onclick: () => removeCard(rec) }, '✕'));
+    if (inner != null) actions.append(el('button', { type: 'button', 'data-tip': 'Copy the answer as text', onclick: () => copy(valueText(inner)) }, 'Copy'));
+    actions.append(el('button', { type: 'button', 'data-tip': 'Remove this card', 'aria-label': 'Remove result', onclick: () => removeCard(rec) }, '✕'));
     head.append(actions);
     if (res.notes && res.notes.length) body.append(el('ul', { class: 'notes' }, ...res.notes.map((n) => el('li', {}, n))));
     renderSteps(c, res.steps, rec);
+  }
+  // "What is this?": hover for the one-line idea, click for the full explanation in the guide
+  function aboutBtn(term) {
+    return el('button', { type: 'button', class: 'g-about', 'data-tip': `${term.plain}\nClick for the formula and an example.`, onclick: () => EW.guide.openTerm(term.id) }, `ⓘ Explain: ${term.term}`);
   }
   function removeCard(rec) {
     rec.el.remove();
@@ -565,7 +607,7 @@
 
   // ---------- simulate tab ----------
   let simUI = null;
-  function ensureSim() { if (!simUI) simUI = EW.sim.build($('tab-sim')); return simUI; }
+  function ensureSim() { if (!simUI) { simUI = EW.sim.build($('tab-sim')); EW.guide.decorate($('tab-sim')); } return simUI; }
 
   // ---------- practice ----------
   let lastProblem = null;
@@ -687,6 +729,7 @@
   // ---------- help ----------
   const HELP_ORDER = ['Data', 'Descriptive statistics', 'Confidence intervals & tests', 'Estimators', 'Distributions', 'Distribution functions', 'Probability', 'Regression', 'Lists & arithmetic'];
   const hb = $('helpBody');
+  hb.append(el('p', { class: 'small muted' }, 'Every command, grouped by topic. New to this? ', el('button', { type: 'button', class: 'link-btn', id: 'refGuide' }, 'Open the guide'), ' instead.'));
   hb.append(el('h4', {}, 'Syntax'), el('table', {}, ...[
     ['x = [1 2 3]', 'save a list (spaces or commas); [1:10] is a range'],
     ['x(2)', 'the 2nd observation'],
@@ -705,7 +748,9 @@
   }
   hb.append(el('h4', {}, 'Keyboard'), el('table', {}, ...[['/', 'focus the command line'], ['↑ ↓', 'recall previous commands'], ['?', 'this reference'], ['⌘/Ctrl + Enter', 'save the data editor']].map(([a, b]) => el('tr', {}, el('td', {}, a), el('td', {}, b)))));
   const openHelp = (on) => { $('help').hidden = !on; $('scrim').hidden = !on; };
-  $('helpBtn').addEventListener('click', () => openHelp(true));
+  $('helpBtn').addEventListener('click', () => EW.guide.open());
+  $('refGuide').addEventListener('click', () => { openHelp(false); EW.guide.open(); });
+  $('emptyGuide').addEventListener('click', () => EW.guide.open());
   $('helpClose').addEventListener('click', () => openHelp(false));
   $('scrim').addEventListener('click', () => openHelp(false));
 
@@ -755,7 +800,23 @@
   renderDerive();
   updatePreview();
   showTab(store.get('ew-tab', 'calc'));
+  EW.guide.init({
+    run: (src) => { showTab('calc'); cmd.value = src; run(); history.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+    tab: showTab,
+    spotlight(id) {
+      const t = $(id);
+      if (!t) return;
+      const box = t.closest('.panel') || t;
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      box.classList.remove('spot'); void box.offsetWidth; box.classList.add('spot');
+      setTimeout(() => box.classList.remove('spot'), 2600);
+    },
+    card: (src) => cardFor(src, Object.create(null), true).el,
+    reference: () => openHelp(true),
+    firstColumn: () => editor.names()[0],
+  });
   if (/[?&]test\b/.test(location.search)) selfTest();
+  else if (!store.get('ew-guide-seen', false, 'local')) { store.set('ew-guide-seen', true, 'local'); EW.guide.open(); }
 
   // ---------- self-test (?test) ----------
   function selfTest() {

@@ -32,19 +32,19 @@
     }
 
     build() {
-      this.segBtns = ['cols', 'freq'].map((m) => el('button', { type: 'button', 'data-m': m, onclick: () => this.setMode(m) }, m === 'cols' ? 'Columns' : 'Frequency table'));
+      this.segBtns = ['cols', 'freq'].map((m) => el('button', { type: 'button', 'data-m': m, 'data-tip': m === 'cols' ? 'Each column is a list of numbers, one observation per row' : 'Each row is a value and how many times it occurred, e.g. 30 people have 1 account', onclick: () => this.setMode(m) }, m === 'cols' ? 'Columns' : 'Frequency table'));
       const seg = el('div', { class: 'seg', role: 'group', 'aria-label': 'Data layout' }, ...this.segBtns);
-      const ex = el('select', { class: 'mini-select', 'aria-label': 'Load example data', onchange: (e) => { if (e.target.value) this.loadExample(e.target.value); e.target.value = ''; } },
+      const ex = el('select', { class: 'mini-select', 'aria-label': 'Load example data', 'data-tip': 'Load some sample data to play with, or clear the table', onchange: (e) => { if (e.target.value) this.loadExample(e.target.value); e.target.value = ''; } },
         el('option', { value: '' }, 'Examples…'), ...Object.entries(EXAMPLES).map(([k, v]) => el('option', { value: k }, v.label)), el('option', { value: 'clear' }, 'Clear'));
-      const step = (label, fn, title) => el('button', { type: 'button', class: 'stepper', title, onclick: fn, tabindex: -1 }, label);
+      const step = (label, fn, title) => el('button', { type: 'button', class: 'stepper', 'data-tip': title, 'aria-label': title, onclick: fn, tabindex: -1 }, label);
       this.rowsLab = el('span', { class: 'dims' });
       this.colCtl = el('span', { class: 'dims' }, step('−', () => this.resizeCols(-1), 'Remove column'), el('span', {}, ' columns '), step('+', () => this.resizeCols(1), 'Add column'));
       const rowCtl = el('span', { class: 'dims' }, step('−', () => this.resizeRows(-1), 'Remove row'), this.rowsLab, step('+', () => this.resizeRows(1), 'Add row'));
       const head = el('div', { class: 'grid-head' }, seg, rowCtl, this.colCtl, ex);
       this.table = el('table', { class: 'dgrid' });
       this.scroll = el('div', { class: 'dgrid-scroll' }, this.table);
-      this.saveBtn = el('button', { type: 'button', class: 'primary', onclick: () => this.save() });
-      this.useBtn = el('button', { type: 'button', class: 'mini-btn', title: 'Insert as a literal into the command line', onclick: () => this.insertLiteral() }, 'Insert as literal');
+      this.saveBtn = el('button', { type: 'button', class: 'primary', 'data-tip': 'Save under the column name so commands can use it, e.g. mean(x)', onclick: () => this.save() });
+      this.useBtn = el('button', { type: 'button', class: 'mini-btn', 'data-tip': 'Put the numbers themselves into the command box, without saving them', onclick: () => this.insertLiteral() }, 'Insert as literal');
       this.err = el('span', { class: 'grid-err' });
       this.card = el('div', { class: 'grid-card' }, head, this.scroll, el('div', { class: 'grid-foot' }, this.saveBtn, this.useBtn, this.err));
       this.root.append(this.card);

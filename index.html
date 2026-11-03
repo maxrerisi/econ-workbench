@@ -20,45 +20,45 @@
     </div>
     <div class="top-actions">
       <div class="seg" role="group" aria-label="Number display">
-        <button type="button" data-mode="dec" class="on" title="Decimals">0.25</button>
-        <button type="button" data-mode="frac" title="Show simple fractions exactly (11/64, 2/13 …)">a/b</button>
+        <button type="button" data-mode="dec" class="on" data-tip="Show answers as decimals">0.25</button>
+        <button type="button" data-mode="frac" data-tip="Show answers as exact fractions when they are simple, like 11/64">a/b</button>
       </div>
-      <button type="button" class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
-      <button type="button" class="icon-btn" id="helpBtn" title="Function reference (?)" aria-label="Help">?</button>
-      <button type="button" class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+      <button type="button" class="icon-btn" id="settingsBtn" data-tip="Settings: rounding, variance formula, z-table values…" aria-label="Settings">⚙</button>
+      <button type="button" class="help-btn" id="helpBtn" data-tip="Guide: how to use this, and the statistics explained" aria-label="Help"><span class="help-q" aria-hidden="true">?</span><span class="help-l">Help</span></button>
+      <button type="button" class="icon-btn" id="themeBtn" data-tip="Light or dark mode" aria-label="Toggle theme">◐</button>
     </div>
   </header>
 
   <div class="layout">
     <aside class="workspace" aria-label="Workspace">
       <div class="ws-head">
-        <h2>Workspace</h2>
+        <h2>Workspace <button type="button" class="tip-i" data-tip="Everything you save appears here. Click a name to use it in the command box. It lasts until you close this tab; use Export to keep a copy." aria-label="About the workspace">ⓘ</button></h2>
         <span class="ws-count" id="wsCount"></span>
       </div>
       <p class="ws-sub">Saved for this browser session. Click a name to insert it.</p>
       <ul id="wsList" class="ws-list"></ul>
       <div class="ws-foot">
-        <button type="button" class="link-btn" id="exportBtn">Export</button>
-        <button type="button" class="link-btn" id="importBtn">Import</button>
-        <button type="button" class="link-btn danger" id="clearWsBtn">Clear</button>
+        <button type="button" class="link-btn" id="exportBtn" data-tip="Download your saved values as a file">Export</button>
+        <button type="button" class="link-btn" id="importBtn" data-tip="Load a file you exported earlier">Import</button>
+        <button type="button" class="link-btn danger" id="clearWsBtn" data-tip="Delete everything saved">Clear</button>
         <input type="file" id="importFile" accept=".json,application/json" hidden />
       </div>
     </aside>
 
     <main>
       <nav class="tabs" role="tablist">
-        <button type="button" role="tab" class="tab on" data-tab="calc" aria-selected="true">Calculator</button>
-        <button type="button" role="tab" class="tab" data-tab="derive" aria-selected="false">Derive</button>
-        <button type="button" role="tab" class="tab" data-tab="dist" aria-selected="false">Distributions</button>
-        <button type="button" role="tab" class="tab" data-tab="sim" aria-selected="false">Simulate</button>
-        <button type="button" role="tab" class="tab" data-tab="practice" aria-selected="false">Practice</button>
+        <button type="button" role="tab" class="tab on" data-tab="calc" aria-selected="true" data-tip="Enter data and get averages, intervals, tests and more">Calculator</button>
+        <button type="button" role="tab" class="tab" data-tab="derive" aria-selected="false" data-tip="Step-by-step derivations of estimators, and short proofs">Derive</button>
+        <button type="button" role="tab" class="tab" data-tab="dist" aria-selected="false" data-tip="Probabilities for the normal, binomial and other distributions">Distributions</button>
+        <button type="button" role="tab" class="tab" data-tab="sim" aria-selected="false" data-tip="Watch the big theorems happen with random samples">Simulate</button>
+        <button type="button" role="tab" class="tab" data-tab="practice" aria-selected="false" data-tip="Practice problems with full solutions">Practice</button>
       </nav>
 
       <section id="tab-calc" class="tabpanel">
         <div class="panel builder">
           <div class="panel-title">
             <h3>Data editor</h3>
-            <span class="hint"><kbd>Enter</kbd>/arrows move · paste a column or a table (with a header row) from Excel or CSV · <kbd>⌘/Ctrl</kbd>+<kbd>Enter</kbd> saves</span>
+            <span class="hint">Type your numbers, or paste a column from Excel or Sheets, then press Save · <kbd>Enter</kbd>/arrows move between cells · <kbd>⌘/Ctrl</kbd>+<kbd>Enter</kbd> saves</span>
           </div>
           <div id="editor"></div>
           <div class="quickops">
@@ -72,7 +72,7 @@
             <span class="prompt" aria-hidden="true">›</span>
             <input id="cmd" class="cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
               placeholder="x = [2 4 4 5 7]    ci(x)    ttest(x, 3)    P(Binom(10, .3), <=, 2)    mle(x, poisson)" aria-label="Expression" />
-            <button type="button" id="runBtn" class="primary">Run</button>
+            <button type="button" id="runBtn" class="primary" data-tip="Run the command (or press Enter)">Run</button>
           </div>
           <div id="preview" class="preview" aria-live="polite"></div>
           <div class="chips" id="chips"></div>
@@ -80,7 +80,7 @@
 
         <div id="history" class="history"></div>
         <div id="historyEmpty" class="empty">
-          <p>Results appear here, each with its working. A few things to try:</p>
+          <p>Results appear here, each with its working. New here? <button type="button" class="link-btn" id="emptyGuide">Open the 2-minute guide</button>. Or click an example:</p>
           <div class="examples" id="examples"></div>
         </div>
       </section>
@@ -94,14 +94,14 @@
           <div class="pr-controls">
             <label class="nsel">X₁, …, Xₙ iid ~ <select id="dvModel" class="mini-select" aria-label="Model"></select></label>
             <div class="seg" role="group" aria-label="Method" id="dvMethod">
-              <button type="button" data-m="mle" class="on">Maximum likelihood</button>
-              <button type="button" data-m="mom">Method of moments</button>
+              <button type="button" data-m="mle" class="on" data-tip="Pick the parameter that makes the observed data most likely">Maximum likelihood</button>
+              <button type="button" data-m="mom" data-tip="Set the model's average equal to the sample average and solve">Method of moments</button>
             </div>
           </div>
         </div>
         <div id="dvOut"></div>
         <div class="panel library">
-          <h3>Proof library</h3>
+          <h3>Proof library <button type="button" class="tip-i" data-tip="Short proofs of facts from class. Each line names the rule that justifies it." aria-label="About the proof library">ⓘ</button></h3>
           <ul id="proofLib"></ul>
         </div>
         <div id="proofOut"></div>
@@ -121,15 +121,19 @@
               <option value="ge">P(X ≥ x)</option>
               <option value="q">quantile F⁻¹(p)</option>
             </select>
+            <button type="button" class="tip-i" data-tip="a ≤ X ≤ b: chance of landing between two values.
+X ≤ x: chance of landing at or below x (the CDF).
+X ≥ x: chance of landing at or above x.
+Quantile: the value with probability p below it." aria-label="About these options">ⓘ</button>
             <span id="dsArgs" class="dp-params"></span>
-            <button type="button" class="primary" id="dsGo">Compute</button>
-            <button type="button" class="mini-btn" id="dsSave">Save as X</button>
+            <button type="button" class="primary" id="dsGo" data-tip="Work out the answer, with steps and a picture">Compute</button>
+            <button type="button" class="mini-btn" id="dsSave" data-tip="Save this distribution as X to use in the Calculator, e.g. E(X) or P(X, 1, 3)">Save as X</button>
           </div>
         </div>
         <div id="dsOut" class="history"></div>
         <div class="panel">
           <details id="zTableBox">
-            <summary class="subhead" style="cursor:pointer;margin:0">Standard normal table</summary>
+            <summary class="subhead" style="cursor:pointer;margin:0" data-tip="The printed table of Φ(z) = P(Z ≤ z), like the one in your textbook">Standard normal table</summary>
             <div id="zTable"></div>
           </details>
         </div>
@@ -145,14 +149,14 @@
           </div>
           <div class="pr-controls">
             <select id="prType" class="mini-select" aria-label="Problem type"></select>
-            <button type="button" class="primary" id="prNew">New problem</button>
+            <button type="button" class="primary" id="prNew" data-tip="Make a fresh problem of this type">New problem</button>
           </div>
           <div id="prProblem" class="pr-problem"></div>
           <div id="prChoices" class="pr-actions" hidden></div>
           <div class="pr-actions" id="prActions" hidden>
-            <button type="button" class="mini-btn" id="prSolve">Show solution</button>
-            <button type="button" class="mini-btn" id="prLoad">Load into workspace</button>
-            <button type="button" class="mini-btn" id="prHint">Hint</button>
+            <button type="button" class="mini-btn" id="prSolve" data-tip="The full worked solution, step by step">Show solution</button>
+            <button type="button" class="mini-btn" id="prLoad" data-tip="Save this problem's data so you can try commands on it in the Calculator">Load into workspace</button>
+            <button type="button" class="mini-btn" id="prHint" data-tip="A nudge toward the first step, without giving the answer away">Hint</button>
           </div>
           <div id="prHintOut" class="small muted" style="margin-top:8px"></div>
           <div id="prSolution" class="history" style="margin-top:12px"></div>
@@ -169,17 +173,20 @@
         <option value="n-1">s² — divide by n − 1</option>
         <option value="n">σ̂² — divide by n (plug-in / MLE)</option>
       </select>
+      <span class="set-help">Leave on n − 1 unless your problem says to divide by n.</span>
     </label>
-    <label class="row check"><input type="checkbox" id="setZ" checked /> Use Table 1 quantiles (1.282, 1.645, 1.960, 2.326, 2.576) when they apply</label>
+    <label class="row check"><input type="checkbox" id="setZ" checked /> <span>Use Table 1 quantiles (1.282, 1.645, 1.960, 2.326, 2.576) when they apply<span class="set-help">Matches the printed table in class. Off = exact values (1.95996…).</span></span></label>
     <label class="row">Significance level α for tests
       <input type="number" id="setAlpha" min="0.001" max="0.5" step="0.01" value="0.05" />
+      <span class="set-help">Reject the claim when the p-value is below this. 0.05 is standard.</span>
     </label>
     <label class="row">Decimal places
       <input type="number" id="setDp" min="2" max="10" value="4" />
     </label>
-    <label class="row check"><input type="checkbox" id="setRobust" /> Heteroskedasticity-robust (HC1) standard errors in OLS</label>
+    <label class="row check"><input type="checkbox" id="setRobust" /> <span>Heteroskedasticity-robust (HC1) standard errors in OLS<span class="set-help">For regression when the spread of y changes with x. Leave off unless asked.</span></span></label>
     <label class="row">Random seed <span class="small muted">(blank = new draws each time)</span>
       <input type="text" id="setSeed" placeholder="e.g. 104" />
+      <span class="set-help">Any number makes simulations come out the same every time.</span>
     </label>
     <label class="row check"><input type="checkbox" id="setSteps" checked /> Open the steps on new results</label>
     <div class="row end"><button type="button" class="primary" id="settingsDone">Done</button></div>
@@ -187,7 +194,7 @@
 
   <!-- Help drawer -->
   <div class="drawer" id="help" hidden role="dialog" aria-label="Function reference">
-    <div class="drawer-head"><h3>Function reference</h3><button type="button" class="icon-btn" id="helpClose" aria-label="Close">✕</button></div>
+    <div class="drawer-head"><h3>Every command</h3><button type="button" class="icon-btn" id="helpClose" aria-label="Close">✕</button></div>
     <div class="drawer-body" id="helpBody"></div>
   </div>
   <div class="scrim" id="scrim" hidden></div>
@@ -205,6 +212,7 @@
   <script src="js/sim.js"></script>
   <script src="js/practice.js"></script>
   <script src="js/grid.js"></script>
+  <script src="js/guide.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

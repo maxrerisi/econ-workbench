@@ -4,6 +4,11 @@ A lightweight, dependency-free web app for Duke **Econ 104 — Statistical Found
 
 Course alignment: Problem Set 6 (Walker) first, then the syllabus (Wu, summer 2022) for everything else: probability, random variables, LLN/CLT, estimators, testing, MoM/MLE and regression.
 
+## Help for newcomers
+
+- **Guide**: opens on the first visit and again from the **Help** button. It has eight short pages: a welcome with one-click starting points, a first calculation, which tab to use, reading a result card, typing commands, a searchable plain-English glossary (each entry has a formula and a runnable example), common mix-ups, and settings.
+- **Tooltips**: every button explains itself on hover. On phones, small ⓘ icons show the same help on tap. Each result card has an **ⓘ Explain** link to the matching glossary entry.
+
 ## Tabs
 
 - **Calculator**

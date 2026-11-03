@@ -29,7 +29,7 @@
       params.innerHTML = '';
       const d = REG[sel.value];
       for (const p of d.params) {
-        const inp = el('input', { type: 'text', inputmode: 'decimal', class: 'dp-in mono', value: values[sel.value + '.' + p.k] ?? p.def, 'aria-label': p.label, title: p.label, spellcheck: 'false' });
+        const inp = el('input', { type: 'text', inputmode: 'decimal', class: 'dp-in mono', value: values[sel.value + '.' + p.k] ?? p.def, 'aria-label': p.label, 'data-tip': p.label, spellcheck: 'false' });
         inp.addEventListener('input', () => { values[sel.value + '.' + p.k] = inp.value; onChange && onChange(); });
         inputs[p.k] = inp;
         params.append(el('label', { class: 'dp-lab' }, texEl(p.tex, false, 'span'), ' = ', inp));

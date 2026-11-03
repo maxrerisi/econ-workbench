@@ -8,6 +8,12 @@
   const rng = () => EW.dist.makeRng(EW.settings.seed === '' ? null : EW.settings.seed);
   const num = (inp, lo, hi, def) => { const v = parseFloat(inp.value); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : def; };
 
+  const SIM_TIPS = {
+    lln: 'Watch the running average settle at the true mean as the sample grows',
+    clt: 'See averages of many samples form a bell curve, whatever the data look like',
+    ci: 'Build many confidence intervals and count how many catch the true mean',
+    est: 'Compare estimators: how far off they are on average, how much they vary, and their MSE',
+  };
   function build(root) {
     const modes = [['lln', 'Law of large numbers'], ['clt', 'Central limit theorem'], ['ci', 'CI coverage'], ['est', 'Estimators']];
     const seg = el('div', { class: 'seg seg-wide', role: 'group', 'aria-label': 'Simulation' });
@@ -15,7 +21,7 @@
     root.append(el('div', { class: 'panel' }, el('div', { class: 'panel-title' }, el('h3', {}, 'Simulations'), el('span', { class: 'hint' }, 'Draw many samples and watch the theorems happen. Set a seed in ⚙ to make runs repeatable.')), seg, body));
     const panels = {};
     for (const [k, label] of modes) {
-      seg.append(el('button', { type: 'button', 'data-sim': k, onclick: () => show(k) }, label));
+      seg.append(el('button', { type: 'button', 'data-sim': k, 'data-tip': SIM_TIPS[k], onclick: () => show(k) }, label));
       panels[k] = el('div', { class: 'sim-panel', hidden: true });
       body.append(panels[k]);
     }
