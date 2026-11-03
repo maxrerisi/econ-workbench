@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Econometrics Workbench</title>
+  <meta name="description" content="Statistics calculator for Econ 104 — confidence intervals, tests, MLE and method-of-moments derivations, distributions, simulations and practice problems, each with step-by-step solutions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230f7a6c'/><path d='M9 10h14' stroke='white' stroke-width='2.4'/><path d='M10 25l12-11M10 14l12 11' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><span class="xbar"><i>x</i></span></span>
+      <span class="brand-name">Econometrics Workbench</span>
+    </div>
+    <div class="top-actions">
+      <div class="seg" role="group" aria-label="Number display">
+        <button type="button" data-mode="dec" class="on" title="Decimals">0.25</button>
+        <button type="button" data-mode="frac" title="Show simple fractions exactly (11/64, 2/13 …)">a/b</button>
+      </div>
+      <button type="button" class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
+      <button type="button" class="icon-btn" id="helpBtn" title="Function reference (?)" aria-label="Help">?</button>
+      <button type="button" class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="workspace" aria-label="Workspace">
+      <div class="ws-head">
+        <h2>Workspace</h2>
+        <span class="ws-count" id="wsCount"></span>
+      </div>
+      <p class="ws-sub">Saved for this browser session. Click a name to insert it.</p>
+      <ul id="wsList" class="ws-list"></ul>
+      <div class="ws-foot">
+        <button type="button" class="link-btn" id="exportBtn">Export</button>
+        <button type="button" class="link-btn" id="importBtn">Import</button>
+        <button type="button" class="link-btn danger" id="clearWsBtn">Clear</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden />
+      </div>
+    </aside>
+
+    <main>
+      <nav class="tabs" role="tablist">
+        <button type="button" role="tab" class="tab on" data-tab="calc" aria-selected="true">Calculator</button>
+        <button type="button" role="tab" class="tab" data-tab="derive" aria-selected="false">Derive</button>
+        <button type="button" role="tab" class="tab" data-tab="dist" aria-selected="false">Distributions</button>
+        <button type="button" role="tab" class="tab" data-tab="sim" aria-selected="false">Simulate</button>
+        <button type="button" role="tab" class="tab" data-tab="practice" aria-selected="false">Practice</button>
+      </nav>
+
+      <section id="tab-calc" class="tabpanel">
+        <div class="panel builder">
+          <div class="panel-title">
+            <h3>Data editor</h3>
+            <span class="hint"><kbd>Enter</kbd>/arrows move · paste a column or a table (with a header row) from Excel or CSV · <kbd>⌘/Ctrl</kbd>+<kbd>Enter</kbd> saves</span>
+          </div>
+          <div id="editor"></div>
+          <div class="quickops">
+            <div class="qo-row" id="unaryOps"></div>
+            <div class="qo-row" id="binaryOps" hidden></div>
+          </div>
+        </div>
+
+        <div class="panel console">
+          <div class="cmd-wrap">
+            <span class="prompt" aria-hidden="true">›</span>
+            <input id="cmd" class="cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+              placeholder="x = [2 4 4 5 7]    ci(x)    ttest(x, 3)    P(Binom(10, .3), <=, 2)    mle(x, poisson)" aria-label="Expression" />
+            <button type="button" id="runBtn" class="primary">Run</button>
+          </div>
+          <div id="preview" class="preview" aria-live="polite"></div>
+          <div class="chips" id="chips"></div>
+        </div>
+
+        <div id="history" class="history"></div>
+        <div id="historyEmpty" class="empty">
+          <p>Results appear here, each with its working. A few things to try:</p>
+          <div class="examples" id="examples"></div>
+        </div>
+      </section>
+
+      <section id="tab-derive" class="tabpanel" hidden>
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Derive an estimator</h3>
+            <span class="hint">Likelihood → log-likelihood → first-order condition → estimator, then bias and consistency — each line with the rule that justifies it.</span>
+          </div>
+          <div class="pr-controls">
+            <label class="nsel">X₁, …, Xₙ iid ~ <select id="dvModel" class="mini-select" aria-label="Model"></select></label>
+            <div class="seg" role="group" aria-label="Method" id="dvMethod">
+              <button type="button" data-m="mle" class="on">Maximum likelihood</button>
+              <button type="button" data-m="mom">Method of moments</button>
+            </div>
+          </div>
+        </div>
+        <div id="dvOut"></div>
+        <div class="panel library">
+          <h3>Proof library</h3>
+          <ul id="proofLib"></ul>
+        </div>
+        <div id="proofOut"></div>
+      </section>
+
+      <section id="tab-dist" class="tabpanel" hidden>
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Distribution calculator</h3>
+            <span class="hint">Probabilities, quantiles and moments, with the standardization step for the normal. Normal uses σ (standard deviation).</span>
+          </div>
+          <div class="sim-row" id="dsPick"></div>
+          <div class="sim-row">
+            <select id="dsQuery" class="mini-select" aria-label="What to compute">
+              <option value="between">P(a ≤ X ≤ b)</option>
+              <option value="le">P(X ≤ x)</option>
+              <option value="ge">P(X ≥ x)</option>
+              <option value="q">quantile F⁻¹(p)</option>
+            </select>
+            <span id="dsArgs" class="dp-params"></span>
+            <button type="button" class="primary" id="dsGo">Compute</button>
+            <button type="button" class="mini-btn" id="dsSave">Save as X</button>
+          </div>
+        </div>
+        <div id="dsOut" class="history"></div>
+        <div class="panel">
+          <details id="zTableBox">
+            <summary class="subhead" style="cursor:pointer;margin:0">Standard normal table</summary>
+            <div id="zTable"></div>
+          </details>
+        </div>
+      </section>
+
+      <section id="tab-sim" class="tabpanel" hidden></section>
+
+      <section id="tab-practice" class="tabpanel" hidden>
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Practice problems</h3>
+            <span class="hint">Work it by hand, then check the step-by-step solution.</span>
+          </div>
+          <div class="pr-controls">
+            <select id="prType" class="mini-select" aria-label="Problem type"></select>
+            <button type="button" class="primary" id="prNew">New problem</button>
+          </div>
+          <div id="prProblem" class="pr-problem"></div>
+          <div id="prChoices" class="pr-actions" hidden></div>
+          <div class="pr-actions" id="prActions" hidden>
+            <button type="button" class="mini-btn" id="prSolve">Show solution</button>
+            <button type="button" class="mini-btn" id="prLoad">Load into workspace</button>
+            <button type="button" class="mini-btn" id="prHint">Hint</button>
+          </div>
+          <div id="prHintOut" class="small muted" style="margin-top:8px"></div>
+          <div id="prSolution" class="history" style="margin-top:12px"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Settings popover -->
+  <div class="popover" id="settings" hidden role="dialog" aria-label="Settings">
+    <h3>Settings</h3>
+    <label class="row">Variance in standard errors &amp; CIs
+      <select id="setDiv">
+        <option value="n-1">s² — divide by n − 1</option>
+        <option value="n">σ̂² — divide by n (plug-in / MLE)</option>
+      </select>
+    </label>
+    <label class="row check"><input type="checkbox" id="setZ" checked /> Use Table 1 quantiles (1.282, 1.645, 1.960, 2.326, 2.576) when they apply</label>
+    <label class="row">Significance level α for tests
+      <input type="number" id="setAlpha" min="0.001" max="0.5" step="0.01" value="0.05" />
+    </label>
+    <label class="row">Decimal places
+      <input type="number" id="setDp" min="2" max="10" value="4" />
+    </label>
+    <label class="row check"><input type="checkbox" id="setRobust" /> Heteroskedasticity-robust (HC1) standard errors in OLS</label>
+    <label class="row">Random seed <span class="small muted">(blank = new draws each time)</span>
+      <input type="text" id="setSeed" placeholder="e.g. 104" />
+    </label>
+    <label class="row check"><input type="checkbox" id="setSteps" checked /> Open the steps on new results</label>
+    <div class="row end"><button type="button" class="primary" id="settingsDone">Done</button></div>
+  </div>
+
+  <!-- Help drawer -->
+  <div class="drawer" id="help" hidden role="dialog" aria-label="Function reference">
+    <div class="drawer-head"><h3>Function reference</h3><button type="button" class="icon-btn" id="helpClose" aria-label="Close">✕</button></div>
+    <div class="drawer-body" id="helpBody"></div>
+  </div>
+  <div class="scrim" id="scrim" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/special.js"></script>
+  <script src="js/dist.js"></script>
+  <script src="js/expr.js"></script>
+  <script src="js/plot.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/derive.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/practice.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
